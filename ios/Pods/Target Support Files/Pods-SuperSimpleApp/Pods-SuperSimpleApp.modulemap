@@ -1,0 +1,6 @@
+module Pods_SuperSimpleApp {
+  umbrella header "Pods-SuperSimpleApp-umbrella.h"
+
+  export *
+  module * { export * }
+}
