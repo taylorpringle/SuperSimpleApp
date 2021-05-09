@@ -21,18 +21,25 @@ import {
 
 var chance = require('chance').Chance();
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { padStart } from "lodash";
+
+const STORAGE_KEY = '@data_list'
 
 function Home({ navigation, route }) {
   const [listData, setListData] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   React.useEffect(() => {
+    readData()
+  }, []);
+
+  React.useEffect(() => {
     const index = listData.length;
     if (route.params?.newItem && route.params?.newItem != listData.length) {
       var randomNumber = (Math.floor(Math.random() * 100) + 1);
       var padded = padStart(randomNumber, 2, 0);
-      console.log
       const newListData = [...listData];
       newListData[index] = {
         title: chance.name({ nationality: 'en' }) + " the " + chance.animal({type: 'zoo'}),
@@ -49,6 +56,30 @@ function Home({ navigation, route }) {
       setIsRefreshing(false);
     }
   }, [isRefreshing]);
+
+  const saveData = async (newListData) => {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newListData))
+      alert('Data successfully saved')
+    } catch (e) {
+      alert('Failed to save the data to the storage')
+    }
+    console.log('Done.');
+  }
+
+  const readData = async () => {
+  try {
+    const jsonValue = await AsyncStorage.getItem(STORAGE_KEY)
+    console.log(jsonValue);
+    const newDataList = JSON.parse(jsonValue);
+    setListData(newDataList);
+  } catch(e) {
+    alert('Failed to fetch the data from storage')
+  }
+
+  console.log('Done.')
+
+}
 
 
   const renderItem = ({ item }) => (
@@ -84,12 +115,25 @@ function Home({ navigation, route }) {
           data={listData}
           renderItem={renderItem}
           keyExtractor={item => item.title}
+          extraData={listData}
+        />
+        <Button
+          title="Save Me"
+          color="#841584"
+          accessibilityLabel="Learn more about this purple button"
+          onPress={() => saveData(listData)}
         />
         <Button
           title="Fill Me"
           color="#841584"
           accessibilityLabel="Learn more about this purple button"
           onPress={() => navigation.navigate('Fill', {listData: listData})}
+        />
+        <Button
+          title="Retrieve Me"
+          color="#841584"
+          accessibilityLabel="Learn more about this purple button"
+          onPress={() => readData()}
         />
       </SafeAreaView>
     </>
