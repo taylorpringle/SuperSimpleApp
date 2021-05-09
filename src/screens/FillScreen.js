@@ -65,7 +65,7 @@ function FillScreen({ route, navigation }) {
             // Pass and merge params back to home screen
             navigation.navigate({
               name: 'Home',
-              params: { addData: listData.length + 1},
+              params: { newItem: listData.length + 1, currentLength: listData.length},
               merge: true,
             });
           }}

@@ -16,61 +16,74 @@ import {
   StatusBar,
   FlatList,
   Button,
+  Image
 } from 'react-native';
 
-import {
-  Header,
-  LearnMoreLinks,
-  Colors,
-  DebugInstructions,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+var chance = require('chance').Chance();
 
-const DATA = [
-  {
-    id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-    title: 'First Item',
-  },
-  {
-    id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
-    title: 'Second Item',
-  },
-  {
-    id: '58694a0f-3da1-471f-bd96-145571e29d72',
-    title: 'Third Item',
-  },
-];
-
-const Item = ({ title }) => (
-  <View style={styles.item}>
-    <Text style={styles.title}>{title}</Text>
-  </View>
-);
+import { padStart } from "lodash";
 
 function Home({ navigation, route }) {
   const [listData, setListData] = useState([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   React.useEffect(() => {
-    if (route.params?.addData) {
+    const index = listData.length;
+    if (route.params?.newItem && route.params?.newItem != listData.length) {
+      var randomNumber = (Math.floor(Math.random() * 100) + 1);
+      var padded = padStart(randomNumber, 2, 0);
+      console.log
       const newListData = [...listData];
-      newListData.push(route.params.addData);
-
+      newListData[index] = {
+        title: chance.name({ nationality: 'en' }) + " the " + chance.animal({type: 'zoo'}),
+        image: 'https://www.placecage.com/c/200/2' + padded,
+      }
       setListData(newListData);
     }
-  }, [route.params?.addData]);
+  }, [route.params?.newItem]);
+
+  React.useEffect(() => {
+    if(isRefreshing === true) {
+      listData.forEach(updateImage);
+      setListData(listData);
+      setIsRefreshing(false);
+    }
+  }, [isRefreshing]);
+
 
   const renderItem = ({ item }) => (
-    <Item title={item.title} />
+    <View style={{flexDirection: 'row', flexWrap: 'wrap', flex: 1,}}>
+    <Image
+        style={styles.logo}
+        source={{
+          uri: item.image,
+        }}
+      />
+      <Text style={{flexWrap: 'wrap', flex: 1}}>{item.title}</Text>
+    </View>
   );
+
+  function onRefresh() {
+    setIsRefreshing(true);
+  }
+
+  function updateImage(item) {
+    var randomNumber = Math.floor(Math.random() * 100) + 1;
+    var padded = padStart(randomNumber, 2, 0);
+    console.log(item);
+    item.image = 'https://www.placecage.com/c/200/2' + padded;
+  }
 
   return (
     <>
       <StatusBar barStyle="dark-content" />
       <SafeAreaView style={styles.container}>
         <FlatList
+          onRefresh={onRefresh}
+          refreshing={isRefreshing}
           data={listData}
           renderItem={renderItem}
-          keyExtractor={item => item.id}
+          keyExtractor={item => item.title}
         />
         <Button
           title="Fill Me"
@@ -97,6 +110,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
   },
+  logo: {
+    width: 200,
+    height: 200,
+},
 });
 
 
